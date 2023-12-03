@@ -68,26 +68,71 @@ word_to_digit <- function(x, word = c("one", "two", "three", "four", "five",
     "eight" = 8,
     "nine" = 9
   )
-  sub(word, replacement = replacements[word], x)
+  as.integer(sub(word, replacement = replacements[word], x))
 }
 ```
 
-Recursively replace all words with digits, from left to right:
+Extract all valid values from a single element of the input:
 
 ```{r}
-all_words_to_digits  <- function(x){
-  word_pattern <- "one|two|three|four|five|six|seven|eight|nine"
+extract_values <- function(input_text) {
+  value_tokens <- c(1:9,  "one", "two", "three", "four", "five", "six", "seven",
+                    "eight", "nine")
   
-  if (grepl(word_pattern, x))  {
-    first_match <- regexpr(pattern = word_pattern, x)
-    word <- substr(x,
-                   first_match,
-                   first_match + attr(first_match,"match.length")  - 1)
-    x <- word_to_digit(x, word)
-    return(all_words_to_digits(x))
-  } else {
-    return(x)
+  matches <-  lapply(
+    value_tokens,
+    function(x)  {
+      all_matches <- regexpr(pattern = x, text = input_text)
+      data.frame(position  = as.numeric(all_matches),
+                 length = as.numeric(attr(all_matches, "match.length")))
+    }
+  )
+  match_df <- as.data.frame(Reduce(rbind, matches))
+  match_df <- match_df[match_df$position > -1,]
+  match_df <- match_df[order(match_df$position),]
+  
+  values <- mapply(function(position,  length) {
+                     substr(input_text,
+                            start = position,
+                            stop = position + length - 1)
+                   },
+                   match_df$position,
+                   match_df$length
+  )
+  values
+}
+```
+
+Parse the extracted values:
+
+```{r}
+# Parse a single value
+parse_value <- function(x)  {
+  try_parse <- suppressWarnings(as.integer(x))
+  if (is.na(try_parse)) {
+    word_to_digit(x, word = x)
+  } else  {
+    try_parse
   }
+}
+
+# Parse a vector of values
+parse_values <-  function(x) {
+  sapply(x, parse_value)
+}
+```
+
+Compute the calibration value for an element of the input by concatenating the first and last extracted values:
+
+```{r}
+calibrate <- function(x){
+  values <- extract_values(x) |>
+    parse_values()
+  
+  as.integer(paste0(
+    values[1],
+    tail(values, 1)
+  ))
 }
 ```
 
@@ -96,28 +141,25 @@ Test against the examples:
 ```{r}
 examples <- c("two1nine", "eightwothree", "abcone2threexyz", "xtwone3four",
               "4nineeightseven2", "zoneight234", "7pqrstsixteen")
+examples_valid <- c(29, 83, 13, 24, 42, 14, 76)
 
-examples_clean <-  lapply(examples, all_words_to_digits)
-example_indices <- gregexpr("[[:digit:]]", text = examples_clean)
-examples_values <- mapply(extract_digit, examples_clean, example_indices)
-sum(examples_values)
+example_values <- sapply(examples, calibrate)
+example_values == examples_valid
+
+sum(example_values)
 ```
 
-Now we can clean the input vector:
+One  more test case:
 
 ```{r}
-cleaned_input <- lapply(input, all_words_to_digits)
+calibrate("oneight")
 ```
 
-... and apply the same solution as for Part One:
+
+Try with the real dataset:
 
 ```{r}
-cleaned_digit_indices <- gregexpr("[[:digit:]]", text = cleaned_input)
-cleaned_values <- mapply(extract_digit,
-                         cleaned_input,
-                         cleaned_digit_indices)
-
-sum(cleaned_values)
-```
+values_part_two <- sapply(input, calibrate)
+sum(values_part_two)
 ```
 
