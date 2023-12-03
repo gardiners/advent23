@@ -1,12 +1,13 @@
 ---
 title: "Day 1"
 author: "Sam Gardiner"
+date: "2023-12-03"
 format: markdown_github
 ---
 
-##  Part A 
+Solves [Day 01](https://adventofcode.com/2023/day/1) of Advent of Code 2023.
 
-### Data
+## Data
 
 Read a newline-delimited text file:
 
@@ -15,19 +16,21 @@ Read a newline-delimited text file:
 input <- scan("data/input01",
               what = "character")
 ```
-Concatenate the first and last digit from a string:
+
+##  Part One
+
+Concatenate the first and last digit from a string to form a two-digit integer:
 
 ```{r}
 extract_digit <- function(element, indices) {
   first <- indices[1]
-  last <- indices[length(indices)]
+  last <- tail(indices, 1)
   
   paste0(substr(element, first, first),
          substr(element, last, last)) |>
     as.integer()
 }
 ```
-
 
 Find the digit indices for each element:
 
@@ -40,5 +43,8 @@ Find the sum of the concatenated two-digit values:
 ```{r}
 values <- mapply(extract_digit, input, digit_indices, SIMPLIFY = TRUE) |>
   sum()
+
 values
 ```
+
+## Part Two 
