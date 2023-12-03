@@ -48,3 +48,76 @@ values
 ```
 
 ## Part Two 
+
+We need a  couple of  functions.
+
+Replace a single known substring with a digit:
+
+```{r}
+word_to_digit <- function(x, word = c("one", "two", "three", "four", "five",
+                                      "six", "seven", "eight", "nine")){
+  word <- match.arg(word)
+  replacements <- list(
+    "one"  = 1,
+    "two" = 2,
+    "three" = 3,
+    "four" = 4,
+    "five" = 5,
+    "six" = 6,
+    "seven" = 7,
+    "eight" = 8,
+    "nine" = 9
+  )
+  sub(word, replacement = replacements[word], x)
+}
+```
+
+Recursively replace all words with digits, from left to right:
+
+```{r}
+all_words_to_digits  <- function(x){
+  word_pattern <- "one|two|three|four|five|six|seven|eight|nine"
+  
+  if (grepl(word_pattern, x))  {
+    first_match <- regexpr(pattern = word_pattern, x)
+    word <- substr(x,
+                   first_match,
+                   first_match + attr(first_match,"match.length")  - 1)
+    x <- word_to_digit(x, word)
+    return(all_words_to_digits(x))
+  } else {
+    return(x)
+  }
+}
+```
+
+Test against the examples:
+
+```{r}
+examples <- c("two1nine", "eightwothree", "abcone2threexyz", "xtwone3four",
+              "4nineeightseven2", "zoneight234", "7pqrstsixteen")
+
+examples_clean <-  lapply(examples, all_words_to_digits)
+example_indices <- gregexpr("[[:digit:]]", text = examples_clean)
+examples_values <- mapply(extract_digit, examples_clean, example_indices)
+sum(examples_values)
+```
+
+Now we can clean the input vector:
+
+```{r}
+cleaned_input <- lapply(input, all_words_to_digits)
+```
+
+... and apply the same solution as for Part One:
+
+```{r}
+cleaned_digit_indices <- gregexpr("[[:digit:]]", text = cleaned_input)
+cleaned_values <- mapply(extract_digit,
+                         cleaned_input,
+                         cleaned_digit_indices)
+
+sum(cleaned_values)
+```
+```
+
