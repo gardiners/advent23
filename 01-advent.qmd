@@ -1,0 +1,44 @@
+---
+title: "Day 1"
+author: "Sam Gardiner"
+format: markdown_github
+---
+
+##  Part A 
+
+### Data
+
+Read a newline-delimited text file:
+
+```{r}
+#| label: ingest
+input <- scan("data/input01",
+              what = "character")
+```
+Concatenate the first and last digit from a string:
+
+```{r}
+extract_digit <- function(element, indices) {
+  first <- indices[1]
+  last <- indices[length(indices)]
+  
+  paste0(substr(element, first, first),
+         substr(element, last, last)) |>
+    as.integer()
+}
+```
+
+
+Find the digit indices for each element:
+
+```{r}
+digit_indices <- gregexpr("[[:digit:]]", text = input)
+```
+
+Find the sum of the concatenated two-digit values:
+
+```{r}
+values <- mapply(extract_digit, input, digit_indices, SIMPLIFY = TRUE) |>
+  sum()
+values
+```
