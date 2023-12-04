@@ -1,0 +1,105 @@
+---
+title: "Day 2"
+author: "Sam Gardiner"
+format: markdown_github
+message: false
+warning: false
+---
+
+Solves [Day 02](https://adventofcode.com/2023/day/2) of Advent of Code 2023.
+
+## Packages
+
+```{r}
+library(tidyverse)
+```
+
+
+## Data
+
+```{r}
+input <- scan("data/input02",
+              what = "character",
+              sep = "\n")
+
+head(input, 3)
+```
+
+## Part One
+
+A couple of parsing functions:
+
+```{r}
+# Parse a single draw, eg. "1 blue"
+parse_draw <- function(x) {
+  colour  <- str_extract(x, "(red)|(green)|(blue)")
+  value <- as.integer(str_extract(x, "[[:digit:]]+"))
+  list(
+    colour =  colour,
+    value = value
+  )
+}
+
+# Parse a single round, e.g. "1 red, 2 blue, 3 green"
+parse_round <- function(x){
+  draws <- str_split_1(x, ", ")
+  map_dfr(draws, parse_draw)
+}
+
+# Parse a single game, ie. a semicolon delimited set of rounds
+parse_game <- function(x) {
+  id <- as.integer(str_extract(x, "(?<=Game )[[:digit:]]+"))
+  rounds <- str_extract(x, "(?<=\\: ).+$") |>
+    str_split_1(";") |>
+    map_dfr(parse_round, .id = "round")
+  
+  rounds |>
+    mutate(game =  id,
+           round =  as.integer(round),
+           .before = 1)
+  
+}
+```
+
+Parse the input dataset to a long dataframe:
+
+```{r}
+games_long  <- map(input, parse_game) |>
+  list_rbind()
+
+head(games_long)
+```
+
+To make the solution logic a little less verbose, pivot out to a wide dataframe:
+
+
+```{r}
+games_wide <- games_long |>
+  pivot_wider(names_from = colour,
+              values_from = value,
+              values_fill = 0)
+
+head(games_wide)
+```
+
+To solve, keep only the games where every round yielded less than 12 red, 13 green and 14 blue cubes.
+
+```{r}
+possible_games <- games_wide |>
+  group_by(game) |>
+  filter(
+    all(
+      c(red <= 12,
+        green <= 13,
+        blue <= 14)
+    )
+  )
+
+head(possible_games)
+
+possible_game_ids <- unique(possible_games$game)
+possible_game_ids
+sum(possible_game_ids)
+```
+
+
