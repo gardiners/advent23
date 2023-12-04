@@ -1,27 +1,25 @@
----
-title: "Day 1"
-author: "Sam Gardiner"
-date: "2023-12-03"
-format: markdown_github
----
+# Day 1
+Sam Gardiner
+2023-12-03
 
-Solves [Day 01](https://adventofcode.com/2023/day/1) of Advent of Code 2023.
+Solves [Day 01](https://adventofcode.com/2023/day/1) of Advent of Code
+2023.
 
 ## Data
 
 Read a newline-delimited text file:
 
-```{r}
-#| label: ingest
+``` r
 input <- scan("data/input01",
               what = "character")
 ```
 
-##  Part One
+## Part One
 
-Concatenate the first and last digit from a string to form a two-digit integer:
+Concatenate the first and last digit from a string to form a two-digit
+integer:
 
-```{r}
+``` r
 extract_digit <- function(element, indices) {
   first <- indices[1]
   last <- tail(indices, 1)
@@ -34,28 +32,30 @@ extract_digit <- function(element, indices) {
 
 Find the digit indices for each element:
 
-```{r}
+``` r
 digit_indices <- gregexpr("[[:digit:]]", text = input)
 ```
 
 Find the sum of the concatenated two-digit values:
 
-```{r}
+``` r
 values <- mapply(extract_digit, input, digit_indices, SIMPLIFY = TRUE) |>
   sum()
 
 values
 ```
 
-## Part Two 
+    [1] 55108
+
+## Part Two
 
 **This solution is wrong.**
 
-We need a  couple of  functions.
+We need a couple of functions.
 
 Replace a single known substring with a digit:
 
-```{r}
+``` r
 word_to_digit <- function(x, word = c("one", "two", "three", "four", "five",
                                       "six", "seven", "eight", "nine")){
   word <- match.arg(word)
@@ -76,7 +76,7 @@ word_to_digit <- function(x, word = c("one", "two", "three", "four", "five",
 
 Extract all valid values from a single element of the input:
 
-```{r}
+``` r
 extract_values <- function(input_text) {
   value_tokens <- c(1:9,  "one", "two", "three", "four", "five", "six", "seven",
                     "eight", "nine")
@@ -107,7 +107,7 @@ extract_values <- function(input_text) {
 
 Parse the extracted values:
 
-```{r}
+``` r
 # Parse a single value
 parse_value <- function(x)  {
   try_parse <- suppressWarnings(as.integer(x))
@@ -124,9 +124,10 @@ parse_values <-  function(x) {
 }
 ```
 
-Compute the calibration value for an element of the input by concatenating the first and last extracted values:
+Compute the calibration value for an element of the input by
+concatenating the first and last extracted values:
 
-```{r}
+``` r
 calibrate <- function(x){
   values <- extract_values(x) |>
     parse_values()
@@ -140,28 +141,39 @@ calibrate <- function(x){
 
 Test against the examples:
 
-```{r}
+``` r
 examples <- c("two1nine", "eightwothree", "abcone2threexyz", "xtwone3four",
               "4nineeightseven2", "zoneight234", "7pqrstsixteen")
 examples_valid <- c(29, 83, 13, 24, 42, 14, 76)
 
 example_values <- sapply(examples, calibrate)
 example_values == examples_valid
+```
 
+            two1nine     eightwothree  abcone2threexyz      xtwone3four 
+                TRUE             TRUE             TRUE             TRUE 
+    4nineeightseven2      zoneight234    7pqrstsixteen 
+                TRUE             TRUE             TRUE 
+
+``` r
 sum(example_values)
 ```
 
-One  more test case:
+    [1] 281
 
-```{r}
+One more test case:
+
+``` r
 calibrate("oneight")
 ```
 
+    [1] 18
 
 Try with the real dataset:
 
-```{r}
+``` r
 values_part_two <- sapply(input, calibrate)
 sum(values_part_two)
 ```
 
+    [1] 56314
