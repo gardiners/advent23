@@ -1,6 +1,7 @@
 ---
 title: "Day 2"
 author: "Sam Gardiner"
+date: "2023-12-04"
 format: markdown_github
 message: false
 warning: false
@@ -101,5 +102,27 @@ possible_game_ids <- unique(possible_games$game)
 possible_game_ids
 sum(possible_game_ids)
 ```
+## Part Two
+
+Find the maximum of each colour drawn in each game:
+
+```{r}
+max_games <- games_wide |>
+  group_by(game) |>
+  summarise(across(c(red, green, blue), max))
+
+head(max_games)
+```
+
+Find the power of each game:
+
+```{r}
+max_game_power <- max_games |>
+  mutate(power = red * green * blue)
+
+head(max_game_power)
+sum(max_game_power$power)
+```
+
 
 

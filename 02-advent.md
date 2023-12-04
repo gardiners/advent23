@@ -1,5 +1,6 @@
 # Day 2
 Sam Gardiner
+2023-12-04
 
 Solves [Day 02](https://adventofcode.com/2023/day/2) of Advent of Code
 2023.
@@ -142,3 +143,50 @@ sum(possible_game_ids)
 ```
 
     [1] 1931
+
+## Part Two
+
+Find the maximum of each colour drawn in each game:
+
+``` r
+max_games <- games_wide |>
+  group_by(game) |>
+  summarise(across(c(red, green, blue), max))
+
+head(max_games)
+```
+
+    # A tibble: 6 × 4
+       game   red green  blue
+      <int> <int> <int> <int>
+    1     1    16    12     3
+    2     2     3    14    16
+    3     3    12    11    17
+    4     4    15    14     1
+    5     5    12     3     2
+    6     6     1    16    17
+
+Find the power of each game:
+
+``` r
+max_game_power <- max_games |>
+  mutate(power = red * green * blue)
+
+head(max_game_power)
+```
+
+    # A tibble: 6 × 5
+       game   red green  blue power
+      <int> <int> <int> <int> <int>
+    1     1    16    12     3   576
+    2     2     3    14    16   672
+    3     3    12    11    17  2244
+    4     4    15    14     1   210
+    5     5    12     3     2    72
+    6     6     1    16    17   272
+
+``` r
+sum(max_game_power$power)
+```
+
+    [1] 83105
